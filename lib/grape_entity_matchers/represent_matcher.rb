@@ -40,12 +40,17 @@ module GrapeEntityMatchers
         self
       end
 
-      def using(other_entity)
+      def using(other_entity, extra_attrs = {})
         @other_entity = other_entity
         @represented_attribute  = double("RepresentedAttribute")
         @other_entity.exposures.keys.each do |key|
           allow(@represented_attribute ).to receive(key).and_return( @other_entity.exposures[key].nil? ? :value : nil)
         end
+
+        extra_attrs.each do |key, value|
+          allow(@represented_attribute).to receive(key).and_return(value)
+        end
+
         self
       end
 
@@ -153,7 +158,7 @@ module GrapeEntityMatchers
           other_representation = @other_entity.represent(@represented_attribute)
 
           other_representation.exposures.keys.each do |key|
-            allow(other_representation).to receive(key).and_return( other_representation.exposures[key].nil? ? :value : nil)
+            allow(other_representation.object).to receive(key).and_return( other_representation.exposures[key].nil? ? :value : nil)
           end
 
           @serialized_hash[@actual_representation || @expected_representable] ==  other_representation.serializable_hash
